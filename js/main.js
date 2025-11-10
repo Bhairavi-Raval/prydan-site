@@ -1,5 +1,20 @@
-// ✅ Quick test to confirm JS is connected
-console.log("✅ JS connected!");
+// Quick test to confirm JS is connected
+console.log("JS connected!");
+
+// js/main.js
+document.addEventListener('DOMContentLoaded', () => {
+  const header = document.querySelector('header.navbar');
+  if (!header) return;
+
+  const onScroll = () => {
+    if (window.scrollY > 8) header.classList.add('is-scrolled');
+    else header.classList.remove('is-scrolled');
+  };
+
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+});
+
 
 /* ===== Sticky header (adds .is-scrolled) ===== */
 (function () {
@@ -201,5 +216,3 @@ if (document.readyState === 'loading') {
     }
   });
 })();
-
-
