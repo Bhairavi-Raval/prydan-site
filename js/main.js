@@ -1,8 +1,11 @@
 // Quick test to confirm JS is connected
 console.log("JS connected!");
 
-// js/main.js
-document.addEventListener('DOMContentLoaded', () => {
+// Mark that JS is running (used by CSS above)
+document.documentElement.classList.add('js');
+
+/* ===== Sticky header (adds .is-scrolled) ===== */
+(() => {
   const header = document.querySelector('header.navbar');
   if (!header) return;
 
@@ -13,28 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
-});
-
-
-/* ===== Sticky header (adds .is-scrolled) ===== */
-(function () {
-  const header = document.querySelector('header.navbar');
-  if (!header) return;
-
-  const onScroll = () => {
-    if (window.scrollY > 8) {
-      header.classList.add('is-scrolled');
-    } else {
-      header.classList.remove('is-scrolled');
-    }
-  };
-
-  onScroll();
-  window.addEventListener('scroll', onScroll, { passive: true });
 })();
 
 /* ===== Smooth scroll for top nav ===== */
-(function () {
+(() => {
   const links = document.querySelectorAll('.nav-links a:not(.btn-primary)');
   if (!links.length) return;
 
@@ -67,16 +52,16 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 /* ===== Active link highlight while scrolling ===== */
-(function () {
+(() => {
   const nav = document.querySelector('.nav-links');
   if (!nav) return;
 
   const sections = [
-    { el: document.querySelector('.hero'),   key: 'Home'   },
-    { el: document.querySelector('.about'),  key: 'About'  },
+    { el: document.querySelector('.hero'), key: 'Home' },
+    { el: document.querySelector('.about'), key: 'About' },
     { el: document.querySelector('.services'), key: 'Services' },
-    { el: document.querySelector('.contact'),  key: 'Contact'  },
-    { el: document.querySelector('.pages'),    key: 'Pages'    }
+    { el: document.querySelector('.contact'), key: 'Contact' },
+    { el: document.querySelector('.pages'), key: 'Pages' }
   ].filter(s => s.el);
 
   if (!sections.length) return;
@@ -107,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 /* ===== Scroll Reveal Sections ===== */
-(function () {
+(() => {
   const revealEls = document.querySelectorAll('.reveal');
   if (!revealEls.length) return;
 
@@ -120,94 +105,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     },
-    {
-      threshold: 0.15, // triggers when 15% of section is visible
-    }
+    { threshold: 0.15 }
   );
 
   revealEls.forEach(el => revealObserver.observe(el));
 })();
 
-// Mark that JS is running (used by CSS above)
-document.documentElement.classList.add('js');
-
-function initReveal() {
-  const els = Array.from(document.querySelectorAll('.reveal'));
-  if (!els.length) return;
-
-  // helper: is element in viewport now?
-  const inView = (el) => {
-    const r = el.getBoundingClientRect();
-    return r.top < window.innerHeight * 0.85 && r.bottom > 0;
-  };
-
-  const show = (el) => el.classList.add('visible');
-
-  if ('IntersectionObserver' in window) {
-    const io = new IntersectionObserver((entries, obs) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          show(entry.target);
-          obs.unobserve(entry.target);
-        }
-      });
-    }, {
-      root: null,
-      rootMargin: '0px 0px -10% 0px',
-      threshold: 0.05
-    });
-
-    // If an element is already visible before observer attaches, show it immediately.
-    els.forEach((el) => {
-      if (inView(el)) show(el);
-      else io.observe(el);
-    });
-  } else {
-    // Fallback for older browsers
-    const onScroll = () => els.forEach((el) => inView(el) && show(el));
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-  }
-}
-
-// Ensure DOM is ready before attaching
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initReveal);
-} else {
-  initReveal();
-}
-
-/// ===== Mobile Navbar Toggle =====
+/* ===== Mobile Navbar Toggle ===== */
 (() => {
   const toggleBtn = document.querySelector('.nav-toggle');
   const navLinks = document.querySelector('.nav-links');
   const body = document.body;
 
-  // Safety check
-  if (!toggleBtn || !navLinks) {
-    console.warn("⚠️ Navbar elements missing!");
-    return;
-  }
+  if (!toggleBtn || !navLinks) return;
 
-  // Toggle menu open/close
   toggleBtn.addEventListener('click', () => {
     const isOpen = navLinks.classList.toggle('show');
     toggleBtn.classList.toggle('active', isOpen);
-
-    // Prevent background scroll when menu is open
     body.style.overflow = isOpen ? 'hidden' : '';
   });
 
-  // Close menu when a link is clicked
   navLinks.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => {
       navLinks.classList.remove('show');
       toggleBtn.classList.remove('active');
-      body.style.overflow = ''; // Re-enable scroll
+      body.style.overflow = '';
     });
   });
 
-  // Optional: close on scroll or resize
   window.addEventListener('resize', () => {
     if (window.innerWidth > 980) {
       navLinks.classList.remove('show');
@@ -215,4 +140,54 @@ if (document.readyState === 'loading') {
       body.style.overflow = '';
     }
   });
+})();
+
+/* ===== Back to Top Button ===== */
+(() => {
+  const btn = document.createElement('button');
+  btn.id = 'backToTop';
+  btn.innerHTML = '↑';
+  document.body.appendChild(btn);
+
+  Object.assign(btn.style, {
+    position: 'fixed',
+    bottom: '25px',
+    right: '25px',
+    display: 'none',
+    background: '#081c3b',
+    color: '#fff',
+    border: 'none',
+    padding: '10px 15px',
+    borderRadius: '50%',
+    cursor: 'pointer',
+    fontSize: '18px',
+    zIndex: '999'
+  });
+
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 400 ? 'block' : 'none';
+  });
+})();
+
+/* ===== Dark / Light Mode Toggle ===== */
+(() => {
+  const toggle = document.querySelector('#theme-toggle');
+  if (!toggle) return;
+
+  const applyTheme = (dark) => {
+    document.body.classList.toggle('dark-mode', dark);
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+  };
+
+  toggle.addEventListener('click', () => {
+    const isDark = !document.body.classList.contains('dark-mode');
+    applyTheme(isDark);
+  });
+
+  // Load saved theme
+  if (localStorage.getItem('theme') === 'dark') applyTheme(true);
 })();
